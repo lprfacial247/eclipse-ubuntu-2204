@@ -20,13 +20,14 @@ Eclipse's built in C++ indexing capabilities have gotten quite good in recent ve
 
 	Fortunately, there is now a make target using a small script that circumvents this problem, by forcing CMake to create the project files in the directory of your package (and not the build/ folder). Proceed as follows:
 
-	Open a terminal, roscd into the folder of your package, and execute:
+	Open a terminal, "roscd" into the folder of your package, and execute:
+		[ roscd <package_name> ]
 
 		[ make eclipse-project ]
 
 	You will now find two Eclipse files in your package. It is not recommended to add them to the repository, as they contain absolute links and will be different for different users checking out your software.
 
-	Note that if you change anything to your manifest.xml, you will have to run this script again, which will overwrite your Eclipse project file and thereby reverting all manual changes to the project settings.
+	Note that if you change anything to your "manifest.xml", you will have to run this script again, which will overwrite your Eclipse project file and thereby reverting all manual changes to the project settings.
 
 	Note: Simply running the cmake Eclipse generator like
 
@@ -43,10 +44,26 @@ Eclipse's built in C++ indexing capabilities have gotten quite good in recent ve
 
 		[ rosmake --target=eclipse-project --specified-only * ]
 	If you need to convert deeper nested packages or multiple stacks at once be encouraged to use this eclipse projects bash script for subdirectories.
+	
+	Bash script to generate eclipse projects for all ROS projects in the current directory.	
+	
+	"make-eclipse-projects.bash"
+	
+	[
+		#!/usr/bin/env bash                                                             
+
+		echo "Generating eclipse projects for all ROS projects in this directory"
+		for MKFILE in `find $PWD -name Makefile`; do
+		    DIR=`dirname $MKFILE`
+		    echo $DIR
+		    cd $DIR
+		    make eclipse-project
+		done
+	]
 
 
 2.2 Catkin-y approach
-	If you are using catkin, you do not have the possibility to use make eclipse-project. You need to execute:
+	If you are using catkin, you do not have the possibility to use make "eclipse-project". You need to execute:
 
 		[ catkin_make --force-cmake -G"Eclipse CDT4 - Unix Makefiles" ]
 	
@@ -63,6 +80,23 @@ Eclipse's built in C++ indexing capabilities have gotten quite good in recent ve
 		[ cmake ../src -DCMAKE_BUILD_TYPE=Debug ]
 
 	For information on the proper approach using catkin, start here
+	
+	"""
+	Go to your workspace directory and run catkin_make with options to generate eclipse project files:
+		[
+			cd ~/catkin_ws
+			catkin_make --force-cmake -G"Eclipse CDT4 - Unix Makefiles"
+		]
+
+	The project files will be generated in the build/ folder. Now source the workspace setup and start eclipse from the terminal:
+		[
+			source ~/catkin_ws/devel/setup.bash
+			eclipse
+		]
+	
+	This allows eclipse to get the correct environment to be able to build from within eclipse. Now import the project from the build/ folder. Eclipse provides a link named "Source directory" within the project so that you can edit the source code. Using this method, the indexer resolves all symbols correctly, and Eclipse is also able to build the workspace successfully.
+	"""
+	
 
 2.2.1 Catkin and Python
 	For me, the above procedure didn't generate a .pydevproject file, like make eclipse-project ever did. Clicking Set as PyDev Project would create a config but without any Paths, so coding would be a hassle.
